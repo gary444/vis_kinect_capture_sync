@@ -1,0 +1,1 @@
+# vis_kinect_capture_sync
