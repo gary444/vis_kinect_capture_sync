@@ -13,23 +13,24 @@ class Capture(object):
 		self.device_sn    = csv_row[2]
 		self.capture_time = int(csv_row[3])
 		self.is_master    = int(csv_row[4])
-		# self.group        = int(csv_row[4])
+		self.group        = int(csv_row[5])
+		self.recovered    = int(csv_row[6])
 
 # constants ---------------------------------------------      
 
 debug_filename = sys.argv[1]
 
-WIDTH=1920*6
+WIDTH=1920*12
 HEIGHT=200*2
 
-circle_r=5
-circle_col=(0,0,255)
+# circle_r=5
+# circle_col=(0,0,255)
 
 rect_cols=[(0,0,255), (0,255,0), (255,125,125)]
 rect_half_size=5
 
 # map_device_idx_to_row=[1,2,0,3] # for 4 cameras 
-map_device_idx_to_row=[0,1,4,2,5,6,3,7] # for 4 cameras 
+map_device_idx_to_row=[0,1,4,2,5,6,3,7]
 
 captures_to_use=3000
 
@@ -57,6 +58,7 @@ with open(debug_filename, newline='') as csvfile:
 
 print('Found ' + str(len(captures)) + ' captures')
 print('ONLY USING THE LAST ' + str(captures_to_use) + ' CAPTURES!!!')
+print(str(captures_to_use/4) + " frames, with 4 captures per frame")
 
 captures=captures[len(captures)-captures_to_use:]
 
@@ -81,10 +83,7 @@ for c_idx in range(len(captures)):
 	c = captures[c_idx]
 
 	normed_capture_time = (c.capture_time - earliest_capture) / capture_range
-	
-	#draw capture as circle
-	# cv.circle(img,(int(WIDTH*normed_capture_time),100), circle_r, circle_col, -1)
-	
+
 	rect_centre_x = int(WIDTH*normed_capture_time)
 	rect_centre_y = 20 + map_device_idx_to_row[c.device_idx] * 20;
 
@@ -95,15 +94,22 @@ for c_idx in range(len(captures)):
 
 
 	if c.is_master:
-		print('master_time: ' + str(c.capture_time))
+		# print('master_time: ' + str(c.capture_time))
 
 		#link masters with line to check group order is not corrupted
 		cv.line(img,last_master_centre,(rect_centre_x,rect_centre_y),(255,255,255),1)
 		last_master_centre = (rect_centre_x,rect_centre_y)
 
+	line_thickness = -1
+	if c.recovered:
+		line_thickness = 2; 
 
 	#draw capture as rect
-	cv.rectangle(img,(rect_centre_x-rect_half_size, rect_centre_y-rect_half_size),(rect_centre_x+rect_half_size,rect_centre_y+rect_half_size),rect_cols[c.frame%3],-1)
+	cv.rectangle(img,
+							(rect_centre_x-rect_half_size, rect_centre_y-rect_half_size),
+							(rect_centre_x+rect_half_size, rect_centre_y+rect_half_size),
+							rect_cols[c.frame%3],
+							line_thickness)
 
 	last_centre = (rect_centre_x,rect_centre_y)
 
