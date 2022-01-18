@@ -15,6 +15,7 @@ class Capture(object):
 		self.is_master    = int(csv_row[4])
 		self.group        = int(csv_row[5])
 		self.recovered    = int(csv_row[6])
+		self.dropped      = int(csv_row[7])
 
 # constants ---------------------------------------------      
 
@@ -93,25 +94,34 @@ for c_idx in range(len(captures)):
 			cv.line(img,last_centre,(rect_centre_x,rect_centre_y),(255,255,255),1)
 
 
-	if c.is_master:
-		# print('master_time: ' + str(c.capture_time))
+	if c.dropped:
+		cv.circle(img,
+						(rect_centre_x, rect_centre_y),
+						rect_half_size,
+						rect_cols[c.frame%3],
+						2)
 
-		#link masters with line to check group order is not corrupted
-		cv.line(img,last_master_centre,(rect_centre_x,rect_centre_y),(255,255,255),1)
-		last_master_centre = (rect_centre_x,rect_centre_y)
+	else:
 
-	line_thickness = -1
-	if c.recovered:
-		line_thickness = 2; 
+		if c.is_master:
+			# print('master_time: ' + str(c.capture_time))
 
-	#draw capture as rect
-	cv.rectangle(img,
-							(rect_centre_x-rect_half_size, rect_centre_y-rect_half_size),
-							(rect_centre_x+rect_half_size, rect_centre_y+rect_half_size),
-							rect_cols[c.frame%3],
-							line_thickness)
+			#link masters with line to check group order is not corrupted
+			cv.line(img,last_master_centre,(rect_centre_x,rect_centre_y),(255,255,255),1)
+			last_master_centre = (rect_centre_x,rect_centre_y)
 
-	last_centre = (rect_centre_x,rect_centre_y)
+		line_thickness = -1
+		if c.recovered:
+			line_thickness = 2; 
+
+		#draw capture as rect
+		cv.rectangle(img,
+								(rect_centre_x-rect_half_size, rect_centre_y-rect_half_size),
+								(rect_centre_x+rect_half_size, rect_centre_y+rect_half_size),
+								rect_cols[c.frame%3],
+								line_thickness)
+
+		last_centre = (rect_centre_x,rect_centre_y)
 
 
 
